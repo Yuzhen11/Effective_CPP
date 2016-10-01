@@ -134,12 +134,169 @@ inline void callWithMax(const T& a, const T& b) {
 
 ## Item 3: Use const whenever possible
 
+const keyword is remarkably versatile.
+
+For pointers, you can specify whether the pointer itself is const, the data it points to is const, both, or neither:
+
+```c++
+char greeting[] = "Hello";
+char* p = greeting;  // non-const pointer, non-const data
+const char* p = greeting;  // non-const pointer, const data
+char* const p = greeting;  // const pointer, non-const data
+const char* const p = greeting;  // const pointer, const data
+```
+
+Declaring an iterator const is like declaring a pointer const (T * const pointer), the iterator isn't allow
+to point to something different, but the thing it points to may be modified.
+```c++
+const std::vector<int>::iterator iter = vec.begin();
+*iter = 10; // ok
+++iter;  // error
+
+std::vector<int>::const_iterator cIter = vec.begin();
+*cIter = 10;  // error
+++iter;  // fine
+```
+
+Return value can be const. Help to reduce the incidence of client errors without giving up safety or efficiency.
+
+```c++
+class Rational { ... };
+const Rational operator*(const Rational& lhs, const Rational& rhs);
+
+Rational a, b, c;
+(a*b) = c; // error
+if (a*b = c) ...    // good to prevent this error, can be identified during compilation
+```
+We can easily prevent the above mistakes. What we want is `if (a*b == c)`
+
+We can also have const member functions
+```c++
+class TextBlock {
+public:
+    const char& operator[](std::size_t position) const 
+    { return text[position]; }
+    char& operator[](std::size_t position)
+    { return text[position]; }
+private:
+    std::string text;
+};
+
+TextBlock tb("Hello");
+std::cout << tb[0];  // call non-const operator[]
+const TextBlock ctb("World");
+std::cout << ctb[0];  // call the const one
+
+tb[0] = 'x';  // ok
+ctb[0] = 'x';  // error
+```
+
+Will be met when we pass parameter using reference-to-const.
+
+Bitwise const and logical const
+
+Compilers enforce bitwise const, but we need logical const!
+
+```c++
+class CTextBlock {
+public:
+    char& operator[](std::size_t position) const  // inappropriate but bitwise const 
+    { return pText[position]; }
+};
+```
+
+Really want to modify value in const member function? mutable!
+
+Avoid Duplicatoin in const and Non-const Member Functions
+```c++
+class TextBlock {
+public:
+    const char& operator[](std::size_t position) const 
+    { return text[position]; }
+    char& operator[](std::size_t position)
+    {
+        return const_cast<char&>(static_cast<const TextBlock&>(*this)[position]);
+    }
+private:
+    std::string text;
+};
+```
+But I don't this is a good idea...
+
+
 ### Things to Remember
 
 * Declaring something const helps compilers detect usage errors. const can be applied to objects
 at any cope, to function parameters and return types, and to member functions as a whole.
 
-* Copmiler enforce bitwise constness, but you should program using conceptual constness.
+* Copmilers enforce bitwise constness, but you should program using conceptual constness.
 
 * When const and non-const member functions have essentially identical implementations,
 code duplicatoin can be avoided by having the non-const version call the const version.
+
+
+## Item 4: Make sure that objects are initialized before they're used.
+
+In general, if you're in the C part of C++ and initialization would probably incur a runtime cost, initialization is not
+guaranteed to take place. If you cross into the non-C part of C++, things somethins change.
+
+The best way to deal with this is to always initialize your objects before you use them.
+
+Prefer initialization list... 
+
+A static object is one that exists from the time it's constructed until the end of the program. Included are global objects, objects
+defined at namespace scope, objects declared static inside classes, objects declared static inside functions, and object declared static at file scope.
+
+Static objects inside functions are known as local static objects (Because they're local to a function), and the other kinds of static
+objects are known as non-local static objects.
+
+Static objects are automatically destroyed when the program exists.
+
+A translation unit is the source code giving rise to a single object file. It's basically a single source file, plus all of its #include files.
+
+The problem is the relative order of iniitalization of non-local static objects defined in different translatoin units is undefined.
+
+```c++
+class FileSystem {
+public:
+    std::size_t numDisks() const;
+};
+extern FileSystem tfs;
+
+class Directory {
+public:
+    Directory(params);
+}
+Directroy::Directory(params) {
+    std::size_t disks = tfs.numDisks();  // use the tfs object
+}
+
+Directory tempDir(params);  // Another non-local static object, tfs may be initialized!!!
+```
+
+The problem is obvious, it's possible that tempDir is initialized before tfs. 
+
+Use local static object!
+```c++
+class FileSystem {...};
+FileSystem& tfs() {
+    static FileSystem fs;
+    return fs;
+}
+class Directory {...};
+Directory::Directory(params) {
+    std::size_t disks = tfs().numDisks();
+}
+Directory& tempDir() {
+    static Directory td;
+    return td;
+}
+```
+
+Objects will be initialized when you first call the functions.
+
+### Things to Remember
+* Manually initialize objects of built-in type, because C++ only sometimes initilizes them itself.
+* In a constructor, prefer use of the member initialization list to assignment inside the body of the constructor.
+List data members in the initialization list in the same order they're declared in the class.
+* Avoid initialization order problems across translatoin units by replacing non-local static objects with local static objects.
