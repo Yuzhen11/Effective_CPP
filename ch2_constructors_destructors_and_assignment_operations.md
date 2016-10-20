@@ -47,7 +47,7 @@ p = s;  // what should happen to the data members in p?
 
 * Compilers may implicitly generate a class's default constructor, copy constructor, copy assignemnt operator, adn destructor.
 
-## Item 6: Explicitly disallow the use of compiler generated funcoitns you do not want
+## Item 6: Explicitly disallow the use of compiler generated functions you do not want
 
 Ways to prevent object to be copied.
 
