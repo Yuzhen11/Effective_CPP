@@ -340,6 +340,7 @@ namespace WidgetStuff {
         a.swap(b);
     }
 }
+```
 According to the name lookup rules, C++ will find the Widget-specific version in WidgetStuff.
 Which is exactly what we want.
 
