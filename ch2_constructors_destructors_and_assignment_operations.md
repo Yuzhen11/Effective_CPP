@@ -317,7 +317,7 @@ Widget& Widget::operator=(const Widget& rhs) {
     Bitmap* pOrig = pb;  // remember the original pb
     pb = new Bitmap(*rhs.pb);
     delete pOrig;  // delete the original pb
-    return this;
+    return *this;
 }
 ```
 Now, if `new Bitmap` throws an excpetion, pb remains unchanged. This code handle self-assignement too but with less efficient(delete and new).
