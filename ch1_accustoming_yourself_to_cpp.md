@@ -11,7 +11,7 @@ Four sublanguages:
 
 2. Object-Oriented C++
 
-3. Tepmlate C++
+3. Template C++
 
 4. The STL
 
