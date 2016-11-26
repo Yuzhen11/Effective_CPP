@@ -1,6 +1,6 @@
 # Ch1: Accustoming yourself to C++
 
-## Item 1: View C++ as a federatoin languages
+## Item 1: View C++ as a federation languages
 
 Today's C++ is a multiparadigm programming language, one supporting a combination of
 procedural, object-oriented, functoinal, generic, and metaprogramming features.
