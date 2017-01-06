@@ -72,7 +72,7 @@ and eliminating client resource management reponsiblities.
 * tr1::shared_ptr supports custom deleters. This prevents the cross-DLL problem, can be used to automatically 
 unlock mutexes (see Item 14), etc.
 
-## Item 19: Thread class design as type design
+## Item 19: Treat class design as type design
 
 * How should objects of your new type be created and destroyed?
 * How should object initialization differ from object assignment?
